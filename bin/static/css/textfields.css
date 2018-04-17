@@ -1,0 +1,24 @@
+.textField {
+  width: 80%;
+  border: 1px solid #ccc;
+  padding: 3px;
+  box-sizing: border-box;
+}
+
+.textField:focus {
+  border: 1px solid #888;
+  outline: none;
+}
+
+/* small textfields for login panel */
+.textField2 {
+  width: 40%;
+  border: 1px solid #ccc;
+  padding: 3px;
+  box-sizing: border-box;
+}
+
+.textField2:focus {
+  border: 1px solid #888;
+  outline: none;
+}

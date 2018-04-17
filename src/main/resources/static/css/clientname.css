@@ -1,0 +1,27 @@
+
+
+.name-container {
+  height: 150px;
+  perspective: 600;
+  position: relative;
+  width: 150px;
+}
+.name {
+  height: 100%;
+  position: absolute;
+  transform-style: preserve-3d;
+  transition: all 1s ease-in-out;
+  width: 100%;
+}
+.name:hover {
+  transform: rotateY(180deg);
+}
+.name .side {
+  backface-visibility: hidden;
+  height: 100%;
+  position: absolute;
+  width: 100%;
+}
+.name .back {
+  transform: rotateY(180deg);
+}

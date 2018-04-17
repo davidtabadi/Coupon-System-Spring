@@ -1,0 +1,384 @@
+<!doctype html>
+<html ng-app="myApp">
+<head>
+	<title>Coupon System</title>
+	<link rel="stylesheet" href="css/page.css">
+	<link rel="stylesheet" href="css/table.css">
+	<link rel="stylesheet" href="css/buttons.css">
+	<link rel="stylesheet" href="css/textfields.css">
+	<link rel="stylesheet" href="css/clientname.css">
+	<script src="js/angular-resource.min.js"></script>
+	<script src="js/angular.min.js"></script>
+	<script src="js/main.js"></script>
+</head>
+<body>
+	<!--  This div will be shown when a client is logged in  -->
+	<div id="loginPage" class="center loginpage" ng-controller="loginCtrl" ng-init="init()" ng-hide="isLoggedIn()" >
+		<!-- <a href ng-click="loginCustomer()" class="btn btn-small">Login</a> -->
+		<input class="textField2" type="text" ng-model="username" placeholder="Username"><br /> 
+		<input class="textField2" type="text" ng-model="password" placeholder="Password"><br />
+		<select name="clientType" class="textField2" ng-model="clientType">
+			<option value="CUSTOMER">Customer</option>
+			<option value="COMPANY">Company</option>
+			<option value="ADMIN">Admin</option>
+		</select>
+		<br />
+		<div class="center">
+			<button class="button3" ng-click="login(username, password, clientType)" width="44">Login</button>
+		</div>
+
+		
+		<div class="center">
+			<md-datepicker ng-model="birthday"></md-datepicker>
+		</div>
+		<div class="center loginpage" ng-controller="loginCtrl" ng-show="loginFailed()">
+			Incorrect user name or password, please try again
+		</div>
+		<div class="center loginpage" ng-controller="loginCtrl" ng-hide="loginFailed()">
+			Please Log in
+		</div>
+	</div>
+
+
+
+	<!--  This div will be shown after successful CUSTOMER login  -->
+	<div id="customertPage"  class="center mainpage" ng-controller="customerCtrl" ng-init="init()" ng-show="isCustomer()">
+		<div class="center mainpage title" >
+			<div class="name-container">
+				<div class="name">
+					<div class="side">Wellcome {{getCustomer().name}}</div>
+					<div class="side back">{{getCustomer().clientType}}</div>
+				</div>
+			</div>
+		</div>
+		<form name="couponTypesForm" class="center"> 
+			<input type="radio" ng-model="couponType" value="ALL">All<br />
+			<input type="radio" ng-model="couponType" value="RESTURANTS">Restaurants<br />
+			<input type="radio" ng-model="couponType" value="ELECTRICITY">Electricity<br />
+			<input type="radio" ng-model="couponType" value="FOOD">Food<br />
+			<input type="radio" ng-model="couponType" value="SPORTS">Sport<br />
+			<input type="radio" ng-model="couponType" value="CAMPING">Camping<br />
+			<input type="radio" ng-model="couponType" value="TRAVELLING">Traveling<br />
+			<input type="radio" ng-model="couponType" value="HEALTH">Health<br />
+			<input type="radio" ng-model="couponType" value="UPTO_PRICE">Upto price :
+			<input class="textField2" type="text" ng-model="maxPrice" placeholder="Maximum price"><br /> 
+			<input type="button" class="button" value="Show purchased coupons" ng-click="getAllPurchasedCoupons(couponType)" />
+			<input type="button" class="button" value="Show available coupons" ng-click="getAllAvailableCoupons(couponType)" />
+		</form>
+		<div id="couponsDiv" class="center">
+			<div class="tableDiv">
+				<table class="general">
+					<tr class="head">
+						<th colspan="9">
+							<div id="tableDisplayHeader">
+								Displaying : {{ displayMode }} coupons
+							</div>
+						</th>
+					</tr>
+					<tr class="head">
+						<th>ID</th>
+						<th>Title</th>
+						<th>Start Date</th>
+						<th>End Date</th>
+						<th>Amount</th>
+						<th>Coupon Type</th>
+						<th>Message</th>
+						<th>Price</th>
+						<th>Image</th>
+					</tr>
+					<tr ng-repeat="coupon in myCoupons"
+						ng-class="{'selected':$index == selectedRow}"
+						ng-click="setClickedRow($index, coupon)">
+						<td>{{ coupon.couponId }}</td>
+						<td>{{ coupon.title }}</td>
+						<td>{{ coupon.startDate | date:'MM-dd-yyyy'}}</td>
+						<td>{{ coupon.endDate | date:'MM-dd-yyyy'}}</td>
+						<td>{{ coupon.amount }}</td>
+						<td>{{ coupon.type }}</td>
+						<td>{{ coupon.message }}</td>
+						<td>{{ coupon.price }}</td>
+						<td>{{ coupon.image }}</td>
+
+					</tr>
+				</table>
+			</div>
+			<div ng-show="isPurchaseButtonEnabled()" ng-click="purchaseCoupon(coupon)" class="center">
+				<input type="button" class="button2" value="purchase coupon"/>
+			</div>
+
+		</div>
+	</div>
+
+
+
+	<!--  This div will be shown after successful COMPANY login  -->
+	<div id="companyPage" class="center mainpage" ng-controller="companyCtrl" ng-init="init()" ng-show="isCompany()" >
+		<div class="center mainpage title" >
+			<div class="name-container">
+				<div class="name">
+					<div class="side">Wellcome {{getCompany().name}}</div>
+					<div class="side back">{{getCompany().clientType}}</div>
+				</div>
+			</div>
+		</div>
+		<form name="couponTypesForm"> 
+			<input type="radio" ng-model="couponType" value="ALL">All<br />
+			<input type="radio" ng-model="couponType" value="RESTURANTS">Restaurants<br />
+			<input type="radio" ng-model="couponType" value="ELECTRICITY">Electricity<br />
+			<input type="radio" ng-model="couponType" value="FOOD">Food<br />
+			<input type="radio" ng-model="couponType" value="SPORTS">Sport<br />
+			<input type="radio" ng-model="couponType" value="CAMPING">Camping<br />
+			<input type="radio" ng-model="couponType" value="TRAVELLING">Traveling<br />
+			<input type="radio" ng-model="couponType" value="HEALTH">Health<br />
+			<input type="radio" ng-model="couponType" value="BY_ID">By Id :
+			<input class="textField" type="text" ng-model="couponId" placeholder="Coupon Id"><br /> 
+			<input type="radio" ng-model="couponType" value="UPTO_PRICE">Upto price :
+			<input class="textField" type="text" ng-model="maxPrice" placeholder="Maximum price"><br /> 
+			
+			
+			<input type="button" class="button" value="Show coupons" ng-click="getCoupons(couponType)" />
+		</form>
+		<div id="couponsDiv" class="center">
+			<div class="tableDiv">
+				<table class="general">
+					<tr class="head">
+						<th colspan="10">
+							<div id="tableDisplayHeader">
+								Displaying coupons
+							</div>
+						</th>
+					</tr>
+					<tr class="head">
+						<th>Id</th><th>Title</th>
+						<th>Start Date</th>
+						<th>End Date</th>
+						<th>Amount</th>
+						<th>Coupon Type</th>
+						<th>Message</th>
+						<th>Price</th>
+						<th>Image</th>
+					</tr>
+					<tr ng-repeat="coupon in myCoupons"
+						ng-class="{'selected':$index == selectedRow}"
+						ng-click="setClickedRow($index, coupon)">
+						<td>{{ coupon.couponId }}</td>
+						<td>{{ coupon.title }}</td>
+						<td>{{ coupon.startDate | date:'MM-dd-yyyy' }}</td>
+						<td>{{ coupon.endDate | date:'MM-dd-yyyy'}}</td>
+						<td>{{ coupon.amount }}</td>
+						<td>{{ coupon.type }}</td>
+						<td>{{ coupon.message }}</td>
+						<td>{{ coupon.price }}</td>
+						<td>{{ coupon.image }}</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+		<div id="selectedCouponFieldsDiv" class="center">
+			<table class="general2">
+				<tr>
+					<td>Id :</td><td><input class="textField" type="text" ng-model="coupon.couponId" placeholder="Enter Coupon ID" ng-readonly="!(selectedRow==null)"></td>
+				</tr>			
+				<tr>
+					<td>Title :</td><td><input class="textField" type="text" ng-model="coupon.title" placeholder="Title" ng-readonly="!(selectedRow==null)"></td>
+				</tr>			
+				<tr>
+					<td>Start date :</td><td><input class="textField" type="date" ng-model="coupon.startDate" placeholder="2015-01-01" ng-readonly="!(selectedRow==null)"></td>
+				</tr>			
+				<tr>
+					<td>End date :</td><td><input class="textField" type="date" ng-model="coupon.endDate" placeholder="2015-01-01"></td>
+				</tr>			
+				<tr>
+					<td>Amount :</td><td><input class="textField" type="text" ng-model="coupon.amount" placeholder="Amount" ng-readonly="!(selectedRow==null)"></td>
+				</tr>			
+				<tr>
+					<td>Coupon type :</td>
+					<td>
+						<select name="couponTypeSelection" class="textField" ng-model="coupon.type">
+							<option value="RESTURANTS">Restaurants</option>
+							<option value="ELECTRICITY">Electricity</option>
+							<option value="FOOD">Food</option>
+							<option value="SPORTS">Sport</option>
+							<option value="CAMPING">Camping</option>
+							<option value="TRAVELLING">Traveling</option>
+							<option value="HEALTH">Health</option>
+						</select>
+					</td>
+				</tr>		
+				<tr>
+					<td>Message :</td><td><input class="textField" type="text" ng-model="coupon.message" placeholder="Message" ng-readonly="!(selectedRow==null)"></td>
+				</tr>			
+				<tr>
+					<td>Price :</td><td><input class="textField" type="text" ng-model="coupon.price" placeholder="Price"></td>
+				</tr>			
+				<tr>
+					<td>Image URL :</td><td><input class="textField" type="text" ng-model="coupon.image" placeholder="Image URL" ng-readonly="!(selectedRow==null)"></td>
+				</tr>			
+				
+			</table>	
+			<div ng-show="true" class="center">
+				<!-- 2 buttons will be shown only if a coupon selected from table -->
+				<input type="button" class="button2" value="update coupon" ng-click="updateCoupon(coupon)" ng-hide="selectedRow==null"/>
+				<input type="button" class="button2" value="remove coupon" ng-click="removeCoupon(coupon)" ng-hide="selectedRow==null"/>
+				<input type="button" class="button2" value="unselect" ng-click="clearCoupon()" ng-hide="selectedRow==null"/>
+				<!-- button will be shown if no coupon selected -->
+				<input type="button" class="button2" value="create new coupon" ng-click="createCoupon()" ng-show="selectedRow==null"/>
+			</div>
+			<div ng-show="isOperationFailed()" class="center">
+				Operation failed. Please make sure all details are correct and legal.
+			</div>
+		</div>
+	</div>	
+	<div id="adminPage" class="center mainpage" ng-controller="adminCtrl" ng-init="init()" ng-show="isAdmin()" >
+		<div class="center mainpage title" >
+			<div class="name-container">
+				<div class="name">
+					<div class="side">Wellcome {{getAdmin().name}}</div>
+					<div class="side back">{{getAdmin().clientType}}</div>
+				</div>
+			</div>
+		</div>
+		
+		<form name="adminPanelSelectionForm" class="center"> 
+			<input type="radio" ng-model="adminPanel" value="COMPANIES">Companies panel<br />
+			<input type="radio" ng-model="adminPanel" value="CUSTOMERS">Customers panel 
+		</form>
+		
+		<!--  ADMIN - Companies panel  -->
+		<div id="companiesPanel"class="center" ng-show="adminPanel=='COMPANIES'">
+			<hr />
+			<form name="companiesModeForm" class="center"> 
+				<input type="radio" ng-model="companiesMode" value="ALL">All<br />
+				<input type="radio" ng-model="companiesMode" value="BY_ID">By Id :
+				<input class="textField2" type="text" ng-model="companyId" placeholder="Company Id"><br /> 
+				<input type="button" class="button" value="Show companies" ng-click="getCompanies(companiesMode)" />
+			</form>
+			<div id="companiesDiv" class="center">
+				<div class="tableDiv">
+					<table class="general">
+						<tr class="head">
+							<th colspan="4">
+								<div id="tableDisplayHeader">
+									Displaying companies
+								</div>
+							</th>
+						</tr>
+						<tr class="head">
+							<th>Id</th><th>Name</th><th>Password</th><th>Email</th>
+						</tr>
+						<tr ng-repeat="company in companies"
+							ng-class="{'selected':$index == companiesSelectedRow}"
+							ng-click="setCompanyClickedRow($index, company)">
+							<td>{{ company.id }}</td>
+							<td>{{ company.compName }}</td>
+							<td>{{ company.passward }}</td>
+							<td>{{ company.email }}</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div id="selectedCompanyFieldsDiv" class="center">
+				<table class="general2">
+					<tr>
+						<td>Id :</td><td><input class="textField" type="text" ng-model="company.id" placeholder="Enter ID" ng-readonly="!(companiesSelectedRow==null)"></td>
+					</tr>			
+					<tr>
+						<td>Name :</td><td><input class="textField" type="text" ng-model="company.compName" placeholder="Enter Name" ng-readonly="!(companiesSelectedRow==null)"></td>
+					</tr>			
+					<tr>
+						<td>Password :</td><td><input class="textField" type="text" ng-model="company.passward" placeholder="..."></td>
+					</tr>			
+					<tr>
+						<td>Email :</td><td><input class="textField" type="text" ng-model="company.email" placeholder="some@email.com"></td>
+					</tr>			
+				</table>	
+				<div ng-show="true" class="center">
+					<!-- 2 buttons will be shown only if a coupon selected from table -->
+					<input type="button" class="button2" value="update company" ng-click="updateCompany(company)" ng-hide="companiesSelectedRow==null"/>
+					<input type="button" class="button2" value="remove company" ng-click="removeCompany(company)" ng-hide="companiesSelectedRow==null"/>
+					<input type="button" class="button2" value="unselect" ng-click="clearCompany()" ng-hide="companiesSelectedRow==null"/>
+					<!-- button will be shown if no coupon selected -->
+					<input type="button" class="button2" value="create new company" ng-click="createCompany()" ng-show="companiesSelectedRow==null"/>
+				</div>
+				<div ng-show="isOperationFailed()" class="center">
+					Operation failed. Please make sure all details are correct and legal.
+				</div>
+			</div>
+		</div>
+		
+		<!--  ADMIN - Customers panel  -->
+		<div id="customersPanel"class="center" ng-show="adminPanel=='CUSTOMERS'">
+			<hr />
+			<form name="customersModeForm" class="center"> 
+				<input type="radio" ng-model="customersMode" value="ALL">All<br />
+				<input type="radio" ng-model="customersMode" value="BY_ID">By Id :
+				<input class="textField2" type="text" ng-model="customerId" placeholder="Customer Id"><br /> 
+				<input type="button" class="button" value="Show customers" ng-click="getCustomers(customersMode)" />
+			</form>
+			<div id="customersDiv" class="center">
+				<div class="tableDiv">
+					<table class="general">
+						<tr class="head">
+							<th colspan="3">
+								<div id="tableDisplayHeader">
+									Displaying customers
+								</div>
+							</th>
+						</tr>
+						<tr class="head">
+							<th>Id</th><th>Name</th><th>Password</th>
+						</tr>
+						<tr ng-repeat="customer in customers"
+							ng-class="{'selected':$index == customersSelectedRow}"
+							ng-click="setCustomerClickedRow($index, customer)">
+							<td>{{ customer.id }}</td>
+							<td>{{ customer.custName }}</td>
+							<td>{{ customer.password }}</td>
+						</tr>
+					</table>
+				</div>
+			</div>
+			<div id="selectedCustomerFieldsDiv" class="center">
+				<table class="general2">
+					<tr>
+						<td>Id :</td><td><input class="textField" type="text" ng-model="customer.id" placeholder="Enter Customer ID" ng-readonly="!(customersSelectedRow==null)"></td>
+					</tr>			
+					<tr>
+						<td>Name :</td><td><input class="textField" type="text" ng-model="customer.custName" placeholder="Name" ng-readonly="!(customersSelectedRow==null)"></td>
+					</tr>			
+					<tr>
+						<td>Password :</td><td><input class="textField" type="text" ng-model="customer.password" placeholder="..."></td>
+					</tr>			
+				</table>	
+				<div ng-show="true" class="center">
+					<!-- 2 buttons will be shown only if a coupon selected from table -->
+					<input type="button" class="button2" value="update customer" ng-click="updateCustomer(customer)" ng-hide="customersSelectedRow==null"/>
+					<input type="button" class="button2" value="remove customer" ng-click="removeCustomer(customer)" ng-hide="customersSelectedRow==null"/>
+					<input type="button" class="button2" value="unselect" ng-click="clearCustomer()" ng-hide="customersSelectedRow==null"/>
+					<!-- button will be shown if no coupon selected -->
+					<input type="button" class="button2" value="create new customer" ng-click="createCustomer()" ng-show="customersSelectedRow==null"/>
+				</div>
+				<div ng-show="isOperationFailed()" class="center">
+					Operation failed. Please make sure all details are correct and legal.
+				</div>
+			</div>
+		</div>
+	</div>
+
+
+
+	<!--  This div will be shown when a client is logged out  -->
+	<div id="logoutPage" class="center logoutpage" ng-controller="logoutCtrl" ng-init="init()" ng-show="isLoggedIn()" >
+		<div class="center">
+			<button class="button3" ng-click="logout()" width="44">Logout</button>
+		</div>
+	</div>
+	
+	<hr/>
+
+</div>
+
+</body>	
+</html>	
+		
+	

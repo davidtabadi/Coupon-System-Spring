@@ -1,0 +1,49 @@
+/* page wrapper */
+div.mainpage {
+	border-radius: 15px;
+	background-color: #8080ff;
+}
+/* page wrapper */
+div.title {
+	font-size: 150%;
+	text-align: center;
+	font-family: cursive;
+
+}
+/* loginpage wrapper */
+div.loginpage {
+	border-radius: 15px;
+	background-color: #8080ff;
+	width: 30%;
+	margin: 50px auto;
+    border-radius: 8px;
+	text-align: center;
+	padding: 50px;
+}
+
+/* logoutpage wrapper */
+div.logoutpage {
+	border-radius: 15px;
+	background-color: #000080;
+}
+
+div.center {
+    margin: auto;
+    width: 80%;
+    /*border:3px solid #73AD21; good for debugging*/
+    padding: 10px;
+}
+form.center {
+    margin: auto;
+    width: 80%;
+    /*border:3px solid #73AD21; good for debugging*/
+    padding: 10px;
+}
+/* global background */
+body {
+  background-color: #000080;
+  font-family: ’Varela Round’, sans-serif;
+}
+input {
+  margin: 6px 0;
+}
